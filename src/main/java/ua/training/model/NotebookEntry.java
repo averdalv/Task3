@@ -1,5 +1,8 @@
 package ua.training.model;
 
+import ua.training.exception.SameLoginException;
+
+import javax.xml.crypto.Data;
 import java.util.GregorianCalendar;
 
 public class NotebookEntry {
@@ -93,5 +96,13 @@ public class NotebookEntry {
 
     public void setDateLastRecord(GregorianCalendar dateLastRecord) {
         this.dateLastRecord = dateLastRecord;
+    }
+    public boolean checkUniqueSkypeLogin(DataBaseMock dataBaseMock) {
+        DataBaseMock []values = dataBaseMock.values();
+        for(DataBaseMock mock :values) {
+            if(getSubscriberSkypeLogin().equals(mock.getSkypeLogin()))
+                throw new SameLoginException();
+        }
+        return true;
     }
 }

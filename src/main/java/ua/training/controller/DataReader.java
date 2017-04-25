@@ -1,11 +1,8 @@
 package ua.training.controller;
 
 import ua.training.GlobalConst;
+import ua.training.controller.prop.PropertiesLoader;
 import ua.training.view.View;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -14,16 +11,13 @@ public class DataReader {
     private Scanner scanner;
     private Properties viewProperties;
     private Properties viewExampleProperties;
-    public DataReader(Scanner scanner,View view) throws IOException{
+    public DataReader(Scanner scanner,View view) {
         this.scanner = scanner;
         this.view = view;
-        InputStream inputStreamView =  new FileInputStream("src/main/resources/view.properties");
-        viewProperties = new Properties();
-        viewExampleProperties = new Properties();
-        viewProperties.load(inputStreamView);
-        InputStream inputStreamViewExample =  new FileInputStream("src/main/resources/viewexamples.properties");
-        viewExampleProperties.load(inputStreamViewExample);
+        viewProperties = PropertiesLoader.getProperties("src/main/resources/view.properties");
+        viewExampleProperties = PropertiesLoader.getProperties("src/main/resources/viewexamples.properties");
     }
+
     public String getValueFromUser(String fieldName) {
         view.printMessage(view.concatenateMessages(
                 GlobalConst.INPUT, GlobalConst.SPACE,

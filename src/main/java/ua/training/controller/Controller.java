@@ -5,10 +5,9 @@ import java.lang.reflect.Field;
 import ua.training.GlobalConst;
 import ua.training.controller.validation.FieldAccessor;
 import ua.training.controller.validation.Validator;
+import ua.training.exception.SameLoginException;
 import ua.training.model.NotebookEntry;
 import ua.training.view.View;
-
-import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.Scanner;
 
@@ -21,12 +20,17 @@ public class Controller {
         this.entry = entry;
         this.view = view;
     }
-    public void processUser() throws IOException{
-        Validator userInputValidator = new Validator(view,scanner,entry);
-        this.entry = userInputValidator.getValidatedNotebookEntry();
-        printEntry();
+    public void processUser() {
+        try {
+            Validator userInputValidator = new Validator(view,scanner,entry);
+            this.entry = userInputValidator.getValidatedNotebookEntry();
+            printEntry();
+        }
+        catch (IllegalAccessException illegalAccessEx) {
+            System.err.println(illegalAccessEx.getMessage());
+        }
     }
-    public void printEntry() {
+    public void printEntry() throws IllegalAccessException{
         FieldAccessor accessor = new FieldAccessor(entry,entry.getClass());
         Field []fields = accessor.getFields();
         for(Field field:fields) {

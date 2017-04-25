@@ -2,7 +2,10 @@ package ua.training.controller.validation;
 
 import ua.training.GlobalConst;
 import ua.training.controller.DataReader;
+import ua.training.controller.prop.PropertiesLoader;
+import ua.training.exception.SameLoginException;
 import ua.training.model.Address;
+import ua.training.model.DataBaseMock;
 import ua.training.model.Name;
 import ua.training.model.NotebookEntry;
 import ua.training.view.View;
@@ -22,17 +25,13 @@ public class Validator {
     private Properties entryMatchedRegExpProperties;
     private Properties regExpProperties;
     DataReader reader;
-    public Validator(View view, Scanner scanner,NotebookEntry entry) throws IOException{
+    public Validator(View view, Scanner scanner,NotebookEntry entry) {
         this.view = view;
         this.scanner = scanner;
         this.entry = entry;
         reader = new DataReader(scanner,view);
-        entryMatchedRegExpProperties = new Properties();
-        regExpProperties = new Properties();
-        InputStream inputStreamRegExp = new FileInputStream("src/main/resources/regexp.properties");
-        regExpProperties.load(inputStreamRegExp);
-        InputStream inputStreamEntryRegExp =  new FileInputStream("src/main/resources/regexpmodel.properties");
-        entryMatchedRegExpProperties.load(inputStreamEntryRegExp);
+        entryMatchedRegExpProperties = PropertiesLoader.getProperties("src/main/resources/regexpmodel.properties");
+        regExpProperties = PropertiesLoader.getProperties("src/main/resources/regexp.properties");
     }
 
     /**
@@ -44,19 +43,20 @@ public class Validator {
     public boolean isValid(String fieldValue, String regExp) {
         return fieldValue.matches(regExp);
     }
-    public Address getValidatedAddress() {
+    public Address getValidatedAddress() throws IllegalAccessException {
         Address address = new Address();
         FieldAccessor accessor = new FieldAccessor(address,address.getClass());
         setValidatedData(accessor);
         return address;
     }
-    public Name getValidatedName() {
+    public Name getValidatedName() throws IllegalAccessException {
         Name name = new Name();
         FieldAccessor accessor = new FieldAccessor(name,name.getClass());
         setValidatedData(accessor);
         return name;
     }
-    public NotebookEntry getValidatedNotebookEntry() {
+    public NotebookEntry getValidatedNotebookEntry() throws IllegalAccessException
+    {
         FieldAccessor accessor = new FieldAccessor(entry,entry.getClass());
         Field[] fields = accessor.getFields();
         for(Field field:fields) {
@@ -66,14 +66,26 @@ public class Validator {
             else if(field.getType()== GregorianCalendar.class)accessor.setField(fieldName,new GregorianCalendar());
             else accessor.setField(fieldName,getValidatedString(fieldName));
         }
+        validateSkypeLogin(entry.getSubscriberSkypeLogin(),GlobalConst.CHECK_VARIABLE_NAME);
         return entry;
     }
+    public void validateSkypeLogin(String skypeLogin,String fieldName) {
+        try {
+            entry.setSubscriberSkypeLogin(skypeLogin);
+            entry.checkUniqueSkypeLogin(DataBaseMock.TEST_LOGIN1);
+        }
+        catch(SameLoginException loginEx) {
+            view.printMessage(GlobalConst.SAME_LOGIN);
+            validateSkypeLogin(getValidatedString(fieldName),fieldName);
+        }
 
+    }
     /**
      *
+     * @exception IllegalAccessException
      * @param accessor accessor for setting values
      */
-    private void setValidatedData(FieldAccessor accessor) {
+    private void setValidatedData(FieldAccessor accessor) throws IllegalAccessException{
         Field[] fields = accessor.getFields();
         for(Field field:fields) {
             String fieldName = field.getName();

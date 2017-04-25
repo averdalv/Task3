@@ -9,4 +9,6 @@ public interface GlobalConst {
     String LEFT_PARENTHESIS="(";
     String RIGHT_PARENTHESIS=")";
     String WRONG_INPUT = "Wrong data!";
+    String SAME_LOGIN = "User with this login already exists! Change login.";
+    String CHECK_VARIABLE_NAME = "subscriberSkypeLogin";
 }

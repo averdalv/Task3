@@ -19,19 +19,25 @@ public class FieldAccessor {
         return managedClass.getDeclaredFields();
     }
 
-    public void setField(String fieldName, Object value) {
-        try {
+    private Field getDeclaredFieldByNameAndSetAccessible (String fieldName) {
 
-            Field field = managedClass.getDeclaredField(fieldName);
+        Field field = null;
+        try{
+
+            field = managedClass.getDeclaredField(fieldName);
             field.setAccessible(true);
+
+        }
+        catch (NoSuchFieldException noFieldException) {
+            System.err.println(noFieldException.getMessage());
+        }
+        return field;
+    }
+    public void setField(String fieldName, Object value) throws IllegalAccessException{
+
+            Field field = getDeclaredFieldByNameAndSetAccessible(fieldName);
             field.set(managedObject, value);
 
-
-        } catch (NoSuchFieldException exception) {
-            throw new RuntimeException("No such field: " + fieldName);
-        } catch (IllegalAccessException exception) {
-            throw new RuntimeException("Illegal access to field: " + fieldName);
-        }
     }
 
     /**
@@ -39,17 +45,9 @@ public class FieldAccessor {
      * @param fieldName name of field
      * @return value of this field
      */
-    public Object getField(String fieldName) {
-        try {
-            Field field = managedClass.getDeclaredField(fieldName);
-            field.setAccessible(true);
+    public Object getField(String fieldName) throws IllegalAccessException{
+            Field field = getDeclaredFieldByNameAndSetAccessible(fieldName);
             return field.get(managedObject);
-
-        } catch (NoSuchFieldException exception) {
-            throw new RuntimeException("No such field: " + fieldName);
-        } catch (IllegalAccessException exception) {
-            throw new RuntimeException("Illegal access to field: " + fieldName);
-        }
 
     }
 }
